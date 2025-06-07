@@ -14,7 +14,7 @@ Each episode comes with:
 
 ---
 
-## 🔥 Episode List
+## Episode List
 
 ### **Episode 1 – How Computers 'Taste' Words: Word Embeddings Explained**
 > Medium article: [Link to Medium post]()  
@@ -36,7 +36,14 @@ What you'll learn:
 
 ## Coming Soon
 > How AI Learns from Mistakes – Loss Functions & Gradient Descent
+> Attention is All You Need – The Magic Behind Transformers	
 
 ## Contributing
 Spotted a bug? Have a better analogy? Want to contribute a notebook for a future episode?
 Feel free to open an issue or reach out to me!
+
+## Found this helpful?
+Please star this repo and share the Medium article to support thoughtful, accessible AI content.
+
+"It's not the tech. It's the story you tell with it."
+— Iron Man
