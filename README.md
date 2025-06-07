@@ -34,12 +34,9 @@ What you'll learn:
 
 > Follow the instructions in the notebook and the articles!
 
-Coming Soon
-Episode	Title	Status
-2	How AI Learns from Mistakes – Loss Functions & Gradient Descent (🕺 Dance Analogy!)	🛠️ In Progress
-3	Attention is All You Need – The Magic Behind Transformers	🛠️ Coming Soon
-4	Positional Encoding – How Models Understand Word Order	🔜 Queued
+## Coming Soon
+> How AI Learns from Mistakes – Loss Functions & Gradient Descent
 
-Contributing
+## Contributing
 Spotted a bug? Have a better analogy? Want to contribute a notebook for a future episode?
 Feel free to open an issue or reach out to me!
