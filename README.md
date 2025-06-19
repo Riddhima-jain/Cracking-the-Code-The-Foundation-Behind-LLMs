@@ -18,7 +18,7 @@ Each episode comes with:
 
 ### **Episode 1 – How Computers 'Taste' Words: Word Embeddings Explained**
 > Medium article: [Link to Medium post]()  
-> Notebook: [`word_embeddings_episode_1.ipynb`]()
+> Notebook: [`word_embeddings`](https://github.com/Riddhima-jain/Cracking-the-Code-The-Foundation-Behind-LLMs/blob/main/Word_Embeddings.ipynb)
 
 What you'll learn:
 - What are word embeddings?
@@ -28,6 +28,15 @@ What you'll learn:
 - Word analogies like `king - man + woman = queen`
 - PCA visualization of real GloVe embeddings
 
+### **Episode 2 – How AI slices language - Tokenization Deep Dive**
+> Notebook: [`tokenization deep dive`](https://github.com/Riddhima-jain/Cracking-the-Code-The-Foundation-Behind-LLMs/blob/main/Tokenization_Deep_Dive.ipynb)
+
+What you'll learn:
+- What is tokenization and why it matters
+- Different methods: Whitespace, Subword (BPE, WordPiece, SentencePiece), Character-level
+- Token cost implications in APIs (like OpenAI)
+- Try your own slicing on real examples
+
 ---
 
 ## How to Use This Repo
@@ -35,6 +44,7 @@ What you'll learn:
 > Follow the instructions in the notebook and the articles!
 
 ## Coming Soon
+>  The Brain Behind It All: Feedforward Neural Networks (FFNs)
 > How AI Learns from Mistakes – Loss Functions & Gradient Descent
 > Attention is All You Need – The Magic Behind Transformers	
 
