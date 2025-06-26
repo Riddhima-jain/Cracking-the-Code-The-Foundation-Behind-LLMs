@@ -1,59 +1,98 @@
-# Cracking-the-Code-The-Foundation-Behind-LLMs
+# 📘 Cracking the Code: The Foundation Behind LLMs
 
-Welcome to the companion repository for the Medium series _Cracking the Code: The Foundational Math Behind LLMs_ — a storytelling-driven journey through the core mathematical ideas that power large language models like GPT, Gemini, Claude through easy to remember concepts.
+Welcome to the companion repository for the Medium series **_Cracking the Code: The Foundational Math Behind LLMs_** — a storytelling-driven journey into the building blocks of large language models like GPT, Claude, and Gemini.
 
-## About the Series
-
-This series simplifies complex AI math using **flavourful analogies**, **visualizations**, and **hands-on code**. Whether you're a curious developer, an early-career ML enthusiast, or someone transitioning into AI, this series is for you.
-
-Each episode comes with:
-- Intuitive analogies (chai vs. coffee... yes, really!)
-- Visual illustrations & plots
-- Fully executable notebooks
-- Real pre-trained model demos (GloVe/Word2Vec)
+Whether you're a developer, a curious learner, or an ML enthusiast trying to go beyond surface-level understanding, this series blends **math, metaphor, and motion** to help you connect the dots.
 
 ---
 
-## Episode List
+## 🧠 About the Series
 
-### **Episode 1 – How Computers 'Taste' Words: Word Embeddings Explained**
-> Medium article: [Link to Medium post]()  
-> Notebook: [`word_embeddings`](https://github.com/Riddhima-jain/Cracking-the-Code-The-Foundation-Behind-LLMs/blob/main/Word_Embeddings.ipynb)
+Each episode explains core concepts behind LLMs using:
+- 🍵 **Flavourful analogies** (chai vs. coffee, dance floor spotlights…)
+- 🎨 **Intuitive visuals & animations**
+- 🧪 **Executable Jupyter notebooks**
+- 🤖 **Pretrained model demos** (GloVe, Word2Vec, HuggingFace)
 
-What you'll learn:
-- What are word embeddings?
-- Why AI models don't work with plain text
-- Word2Vec: CBOW vs. Skip-Gram architectures
-- Cosine similarity (explained with vector math & beverages ☕️)
-- Word analogies like `king - man + woman = queen`
+You won’t just learn *what* the model is doing — you'll understand *why* it works.
+
+---
+
+## 📚 Episode List
+
+### ✅ Episode 1 – [How Computers 'Taste' Words: Word Embeddings Explained](https://medium.com/@jainriddhima00/how-computers-taste-words-word-embeddings-explained-06b6d5ab15a6)
+> Notebook: [`Word_Embeddings.ipynb`](https://github.com/Riddhima-jain/Cracking-the-Code-The-Foundation-Behind-LLMs/blob/main/Word_Embeddings.ipynb)
+
+What you’ll explore:
+- What are embeddings & why text needs them
+- Vector spaces, cosine similarity, and flavor metaphors
+- Word2Vec (CBOW & Skip-Gram)
+- Analogy math: `king - man + woman = queen`
 - PCA visualization of real GloVe embeddings
 
-### **Episode 2 – How AI slices language - Tokenization Deep Dive**
-> Notebook: [`tokenization deep dive`](https://github.com/Riddhima-jain/Cracking-the-Code-The-Foundation-Behind-LLMs/blob/main/Tokenization_Deep_Dive.ipynb)
+---
 
-What you'll learn:
-- What is tokenization and why it matters
-- Different methods: Whitespace, Subword (BPE, WordPiece, SentencePiece), Character-level
-- Token cost implications in APIs (like OpenAI)
-- Try your own slicing on real examples
+### ✅ Episode 2 – [How AI Slices Language: Tokenization Deep Dive](https://www.linkedin.com/posts/jainriddhima00_tokenization-llm-nlp-activity-7204826815171104769-rKkS/)
+> Notebook: [`Tokenization_Deep_Dive.ipynb`](https://github.com/Riddhima-jain/Cracking-the-Code-The-Foundation-Behind-LLMs/blob/main/Tokenization_Deep_Dive.ipynb)
+
+What’s inside:
+- Why tokenization matters (and how it affects cost!)
+- Methods: Whitespace, BPE, WordPiece, SentencePiece, Character
+- Real slicing demos with API-style cost comparison
+- Sandwich metaphors & tokenizer breakdowns
 
 ---
 
-## How to Use This Repo
+### ✅ Episode 3 – [How AI Pays Attention: Spotlights, Sequence & Focus](https://medium.com/@jainriddhima00/how-ai-pays-attention-spotlights-context-and-positional-cues-e5e0b8ea15e7)
+> Notebook: [`Tokenization_Deep_Dive.ipynb`](https://github.com/Riddhima-jain/Cracking-the-Code-The-Foundation-Behind-LLMs/blob/main/PositionalEncodings_And_Attention.ipynb)
 
-> Follow the instructions in the notebook and the articles!
 
-## Coming Soon
->  The Brain Behind It All: Feedforward Neural Networks (FFNs)
-> How AI Learns from Mistakes – Loss Functions & Gradient Descent
-> Attention is All You Need – The Magic Behind Transformers	
+Learn how:
+- Positional encoding adds order to parallel tokens
+- Self-attention decides “who to watch”
+- Multi-head attention brings diverse focus  
+Includes spotlight dance floor metaphors and a visual walk-through of attention flow.
 
-## Contributing
-Spotted a bug? Have a better analogy? Want to contribute a notebook for a future episode?
-Feel free to open an issue or reach out to me!
+---
 
-## Found this helpful?
-Please star this repo and share the Medium article to support thoughtful, accessible AI content.
+## 🔜 Coming Soon
 
-"It's not the tech. It's the story you tell with it."
-— Iron Man
+| Episode | Theme |
+|--------|-------|
+| Episode 4 | **How AI Dances — Feedforward Layers & Activation Functions** *(dance practice meets neural math)* |
+| Episode 5 | **How AI Learns From Mistakes — Loss Functions & Gradient Descent** |
+| Episode 6 | **Attention is All You Need — The Transformer Revolution** |
+
+---
+
+## 🧪 How to Use This Repo
+
+1. Clone the repo or open notebooks in Colab.
+2. Each episode’s notebook is plug-and-play.
+3. Read the accompanying Medium article for full context and visuals.
+
+---
+
+## 🛠️ Contributing
+
+Spotted a bug?  
+Have a better analogy?  
+Want to contribute code or visuals?
+
+Feel free to open an issue or pull request.  
+Let’s build accessible AI education together.
+
+---
+
+## ⭐️ Found this Helpful?
+
+- Give the repo a star 🌟  
+- Share the [Medium series](https://medium.com/@jainriddhima00)  
+- Follow for more episodes, visuals, and explainers!
+
+> “It’s not the tech. It’s the story you tell with it.”  
+> — *Iron Man*
+
+---
+
+🧵 Let’s decode the magic — one sip, one spotlight, one dance move at a time.
