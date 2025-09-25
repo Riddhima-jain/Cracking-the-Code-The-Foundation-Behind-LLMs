@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<title>Gossip Layer + Activation (Unified Notation)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+:root{
+  --bg:#f8fafc; --panel:#ffffff; --text:#323130; --muted:#605e5c;
+  --blue:#a4cafe; --pink:#fca5a5; --gold:#86efac; --bias:#c4b5fd; --grid:#f1f5f9;
+  --biasEdge:#c4b5fd;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--text);font:14px/1.35 system-ui,-apple-system,Segoe UI,Inter,Roboto,Arial;padding:18px;display:flex;flex-wrap:wrap;gap:18px}
+.panel{flex:1 1 560px;background:var(--panel);border:1px solid #d8dde4;border-radius:16px;padding:14px 18px 18px;box-shadow:0 4px 10px rgba(0,0,0,.04);display:flex;flex-direction:column;min-width:440px}
+h2{margin:0 0 10px;font-size:17px;font-weight:600;letter-spacing:.4px}
+.controls{display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin:4px 0 10px}
+.controls label{display:flex;gap:6px;align-items:center;font-size:12px}
+input[type=range]{accent-color:var(--blue)}
+.badge{font-size:12px;color:var(--muted)}
+.pill{padding:.38rem .65rem;background:#eef3fa;border:1px solid #d8dde4;border-radius:999px;font-size:12px;color:#1e242c}
+.legend{display:flex;gap:14px;font-size:11px;color:var(--muted);flex-wrap:wrap;margin:2px 0 8px}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.sw{width:14px;height:14px;border-radius:50%;outline:1px solid #222}
+.sw.in{background:var(--blue)} .sw.hid{background:var(--pink)} .sw.out{background:var(--gold)} .sw.bias{background:var(--bias)}
+.sw.pos{background:#86efac;border-radius:3px;width:18px;height:6px} .sw.neg{background:#fca5a5;border-radius:3px;width:18px;height:6px}
+.sw.w{background:linear-gradient(90deg,#86efac,#fca5a5);border-radius:3px;width:26px;height:8px}
+svg{width:100%;display:block;font-family:inherit}
+#net{height:400px}
+.node{stroke:#222;stroke-width:1.05;filter:drop-shadow(0 0 3px rgba(0,0,0,.18)) drop-shadow(0 2px 6px rgba(0,0,0,.12));transition:fill-opacity .35s}
+.n-in{fill:var(--blue)} .n-hid{fill:var(--pink)} .n-out{fill:var(--gold)} .n-bias{fill:var(--bias)}
+.edge{stroke-linecap:round;stroke-linejoin:round;fill:none;vector-effect:non-scaling-stroke;opacity:.95}
+.edge.pos{stroke:var(--gold)} .edge.neg{stroke:var(--blue)} .edge.bias{stroke:var(--biasEdge);stroke-dasharray:5 4}
+.edge[data-mag="lg"]{stroke-width:3.1} .edge[data-mag="md"]{stroke-width:2.1} .edge[data-mag="sm"]{stroke-width:1.35;opacity:.85}
+.edge-label{font-size:10.5px;font-weight:600;fill:#16202a;paint-order:stroke;stroke:#fff;stroke-width:5px;pointer-events:none;opacity:.92}
+.edge-label.hidden{display:none}
+.label{fill:#14202b;font-size:12px;font-weight:500;pointer-events:none;paint-order:stroke;stroke:#fff;stroke-width:4px}
+.sum{fill:#10171f;font-size:13px;font-weight:600;pointer-events:none;paint-order:stroke;stroke:#fff;stroke-width:4px}
+.tiny{fill:#324252;font-size:11px;pointer-events:none;paint-order:stroke;stroke:#fff;stroke-width:4px;font-weight:500}
+.formulas{font:12px/1.34 ui-monospace,monospace;color:#1b2733;background:#f0f5fa;border:1px solid #d3dae2;border-radius:10px;padding:8px 10px;margin:6px 0 4px;max-width:720px;white-space:pre;overflow-x:auto}
+.caption{color:var(--muted);margin-top:6px;font-size:12px;line-height:1.26;max-width:720px}
+#plot{height:420px}
+.grid{stroke:var(--grid);stroke-width:.8;stroke-dasharray:3 6}
+.axis{stroke:#9aa2b0;stroke-width:1.05}
+.curve{fill:none;stroke:#60a5fa;stroke-width:2.6}
+.dot{fill:#f87171;stroke:#00000040;stroke-width:1.05}
+.projx{stroke:#94a3b8;stroke-dasharray:4 6;opacity:.75}
+.projy{stroke:#94a3b8;stroke-dasharray:4 6;opacity:.75}
+.tickLbl{fill:#5b6474;font-size:11px}
+.readout{display:flex;gap:16px;flex-wrap:wrap;margin:4px 0 6px;color:var(--muted);font:12.5px/1.25 ui-monospace,monospace}
+.readout b{color:#101820;font-weight:600}
+.viz{flex:1;display:flex;flex-direction:column;margin-top:4px;background:#f8fafd;border:1px solid #d8dde4;border-radius:12px;padding:8px 10px 10px}
+.ax-slider-row{display:flex;align-items:center;gap:12px;margin:4px 0 8px}
+.ax-slider-row input[type=range]{flex:1}
+select,.chk{background:#eef3fa;border:1px solid #cfd6de;color:#202a33;padding:6px 10px;border-radius:10px;font-size:13px;display:flex;align-items:center;gap:6px}
+select{cursor:pointer}
+.chk input[type=checkbox]{accent-color:var(--blue);width:16px;height:16px}
+</style>
+<!-- Added GIF dependencies -->
+<script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/gif.js@0.2.0/dist/gif.js"></script>
+</head>
+<body>
+
+
+<!-- LEFT -->
+<div class="panel">
+  <h2>Gossip Relay Layer</h2>
+  <div class="controls">
+    <label class="badge">x ∈ [−5,5]
+      <input id="xSlider" type="range" min="-5" max="5" step="0.01" value="0" style="width:190px">
+    </label>
+    <span class="pill">x = <span id="xRead">0.00</span></span>
+    <label class="chk"><input type="checkbox" id="autoNet" checked> Auto</label>
+    <label class="chk"><input type="checkbox" id="clamp" checked> Opacity clamp</label>
+    <label class="chk"><input type="checkbox" id="showForm" checked> Formulas</label>
+    <label class="chk"><input type="checkbox" id="showWeights"> Weights</label>
+    <label class="chk"><input type="checkbox" id="showZ"> Show z</label>
+  </div>
+
+  <div class="legend">
+    <span><span class="sw in"></span>Sources</span>
+    <span><span class="sw hid"></span>Relays</span>
+    <span><span class="sw out"></span>Story</span>
+    <span><span class="sw bias"></span>Bias</span>
+    <span><span class="sw pos"></span>w&gt;0</span>
+    <span><span class="sw neg"></span>w&lt;0</span>
+    <span><span class="sw w"></span>|w| thick</span>
+  </div>
+
+  <svg id="net" viewBox="0 0 860 400" aria-label="gossip-network">
+    <g id="edges"></g>
+    <g id="nodes">
+      <!-- Inputs -->
+      <circle id="in0" class="node n-in"  cx="140" cy="140" r="28"/><text class="label" x="140" y="140" dy="5" text-anchor="middle">x</text>
+      <circle id="in1" class="node n-in"  cx="140" cy="220" r="28"/><text class="label" x="140" y="220" dy="5" text-anchor="middle">x₂</text>
+      <circle id="in2" class="node n-in"  cx="140" cy="300" r="28"/><text class="label" x="140" y="300" dy="5" text-anchor="middle">x₃</text>
+
+      <!-- Bias (shared for hidden) -->
+      <circle id="bH" class="node n-bias" cx="440" cy="70" r="18"/><text class="tiny" x="440" y="70" dy="4" text-anchor="middle">b</text>
+
+      <!-- Hidden -->
+      <circle id="h0" class="node n-hid" cx="440" cy="190" r="34"/>
+      <circle id="h1" class="node n-hid" cx="440" cy="290" r="34"/>
+      <text class="tiny" x="440" y="190" dy="-44" text-anchor="middle">Relay 1</text>
+      <text class="tiny" x="440" y="290" dy="-44" text-anchor="middle">Relay 2</text>
+
+      <!-- Output -->
+      <circle id="out" class="node n-out" cx="740" cy="240" r="40"/>
+      <text class="tiny" x="740" y="240" dy="-54" text-anchor="middle">Story</text>
+
+      <!-- Value readouts -->
+      <text id="xin0" class="sum" x="140" y="140" dy="28" text-anchor="middle">0.00</text>
+      <text id="xin1" class="sum" x="140" y="220" dy="28" text-anchor="middle">-0.35</text>
+      <text id="xin2" class="sum" x="140" y="300" dy="28" text-anchor="middle">0.25</text>
+
+      <text id="hsum0" class="tiny" x="440" y="190" dy="-6" text-anchor="middle" style="display:none">z₁=0.00</text>
+      <text id="hact0" class="sum"  x="440" y="190" dy="6"  text-anchor="middle">h₁=0.00</text>
+      <text id="hsum1" class="tiny" x="440" y="290" dy="-6" text-anchor="middle" style="display:none">z₂=0.00</text>
+      <text id="hact1" class="sum"  x="440" y="290" dy="6"  text-anchor="middle">h₂=0.00</text>
+
+      <text id="yval" class="sum"  x="740" y="240" dy="8"  text-anchor="middle">y=0.00</text>
+    </g>
+  </svg>
+
+  <div id="formulas" class="formulas"></div>
+
+  <p class="caption">
+    Unified notation: weights w₁…w₈, biases b₁,b₂, inputs x,x₂,x₃. Toggle “Weights” to show labels; “Show z” reveals pre-activations.
+  </p>
+</div>
+
+<!-- RIGHT: Activation -->
+<div class="panel">
+  <h2>Activation Function</h2>
+  <div class="ax-slider-row">
+    <span class="badge">x ∈ [−5,5]</span>
+    <input id="axSlider" type="range" min="-5" max="5" step="0.01" value="0">
+    <span class="pill">x = <span id="axRead">0.00</span></span>
+    <label class="chk"><input type="checkbox" id="autoAct" checked> Auto</label>
+    <label class="chk"><input type="checkbox" id="clampY" checked> Clamp y</label>
+    <select id="fn" class="select" title="Activation">
+        <option value="relu">ReLU</option>
+        <option value="gelu">GELU</option>
+        <option value="sigmoid">Sigmoid</option>
+        <option value="tanh">Tanh</option>
+        <option value="swish">Swish</option>
+    </select>
+  </div>
+  <div class="readout">
+    <div>f(x)=<b id="yRead">0.000</b></div>
+    <div id="fnName">ReLU</div>
+    <div>Range: <b id="rangeLbl">[~−1,~1]</b></div>
+  </div>
+  <div class="viz">
+    <svg id="plot" viewBox="0 0 800 420" aria-label="activation-plot">
+      <g id="grid"></g>
+      <path id="curve" class="curve" d=""/>
+      <line id="projx" class="projx" x1="0" y1="0" x2="0" y2="0"/>
+      <line id="projy" class="projy" x1="0" y1="0" x2="0" y2="0"/>
+      <circle id="dot" class="dot" r="6" cx="0" cy="0"/>
+    </svg>
+  </div>
+</div>
+
+<script>
+const fns = {
+  relu: { name: "ReLU", f: x => Math.max(0, x) },
+  gelu: { name: "GELU", f: x => 0.5 * x * (1 + Math.tanh(Math.sqrt(2/Math.PI) * (x + 0.044715*Math.pow(x,3)))) },
+  sigmoid: { name: "Sigmoid", f: x => 1/(1+Math.exp(-x)) },
+  tanh: { name: "Tanh", f: x => Math.tanh(x) },
+  swish: { name: "Swish", f: x => x / (1 + Math.exp(-x)) }
+};
+
+/* -------- Network -------- */
+(()=>{
+  // Data (same numbers) mapped to unified w indices:
+  // w1 x→h1, w2 x→h2, w3 x2→h1, w4 x2→h2, w5 x3→h1, w6 x3→h2, w7 h1→y, w8 h2→y
+  const x2=-0.35,x3=0.25;
+  const w=[null,0.80,-0.60,-0.50,0.90,0.30,-0.40,0.70,-0.50];
+  const b=[null,0.25,-0.415]; // b1,b2 for hidden
+  let actKey='relu';
+
+  const q=s=>document.querySelector(s);
+  const slider=q('#xSlider'),xRead=q('#xRead'),autoNet=q('#autoNet'),
+        clamp=q('#clamp'),showForm=q('#showForm'),showWeights=q('#showWeights'),
+        showZ=q('#showZ'),formulasBox=q('#formulas'),edgesG=q('#edges'),actSel=q('#actSel');
+
+  function magClass(val){const a=Math.abs(val);return a>=0.65?'lg':a>=0.35?'md':'sm';}
+  function path(x1,y1,x2,y2){const mid=(x1+x2)/2,off=(y2-y1)*0.07;return`M${x1},${y1} C${mid},${y1+off} ${mid},${y2-off} ${x2},${y2}`;}
+  function addEdge(x1,y1,x2,y2,val,label,isBias=false){
+    const g=document.createElementNS('http://www.w3.org/2000/svg','g');
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('d',path(x1,y1,x2,y2));
+    p.setAttribute('class','edge '+(isBias?'bias':(val>=0?'pos':'neg')));
+    if(!isBias) p.dataset.mag=magClass(val);
+    const tt=document.createElementNS('http://www.w3.org/2000/svg','title');
+    tt.textContent=label+' = '+val.toFixed(3);
+    p.appendChild(tt);
+    g.appendChild(p);
+    if(showWeights.checked){
+      const txt=document.createElementNS('http://www.w3.org/2000/svg','text');
+      txt.setAttribute('x',(x1+x2)/2);
+      txt.setAttribute('y',(y1+y2)/2 - (isBias?8:0));
+      txt.setAttribute('text-anchor','middle');
+      txt.setAttribute('class','edge-label');
+      txt.textContent=label+'='+val.toFixed(2);
+      g.appendChild(txt);
+    }
+    edgesG.appendChild(g);
+  }
+  function drawEdges(){
+    edgesG.innerHTML='';
+    // Inputs coords
+    const IN=[{x:140,y:140},{x:140,y:220},{x:140,y:300}];
+    const H=[{x:440,y:190},{x:440,y:290}];
+    const B={x:440,y:70};
+    const OUT={x:740,y:240};
+    // x,x2,x3 to hidden
+    addEdge(IN[0].x,IN[0].y,H[0].x,H[0].y,w[1],'w₁');
+    addEdge(IN[0].x,IN[0].y,H[1].x,H[1].y,w[2],'w₂');
+    addEdge(IN[1].x,IN[1].y,H[0].x,H[0].y,w[3],'w₃');
+    addEdge(IN[1].x,IN[1].y,H[1].x,H[1].y,w[4],'w₄');
+    addEdge(IN[2].x,IN[2].y,H[0].x,H[0].y,w[5],'w₅');
+    addEdge(IN[2].x,IN[2].y,H[1].x,H[1].y,w[6],'w₆');
+    // biases to hidden
+    addEdge(B.x,B.y,H[0].x,H[0].y,b[1],'b₁',true);
+    addEdge(B.x,B.y,H[1].x,H[1].y,b[2],'b₂',true);
+    // hidden to output
+    addEdge(H[0].x,H[0].y,OUT.x,OUT.y,w[7],'w₇');
+    addEdge(H[1].x,H[1].y,OUT.x,OUT.y,w[8],'w₈');
+  }
+  drawEdges();
+
+  const setText=(id,v)=>{const el=document.getElementById(id);if(el)el.textContent=v;};
+  const opacityVal=v=>0.25+0.75*Math.min(1,Math.abs(v));
+
+  function forward(x){
+    const f=ACTS[actKey].f;
+    const z1=w[1]*x + w[3]*x2 + w[5]*x3 + b[1];
+    const z2=w[2]*x + w[4]*x2 + w[6]*x3 + b[2];
+    const h1=f(z1), h2=f(z2);
+    const y=f( w[7]*h1 + w[8]*h2 ); // no output bias
+
+    setText('xin0',x.toFixed(2)); setText('xin1',x2.toFixed(2)); setText('xin2',x3.toFixed(2));
+    setText('hact0','h₁='+h1.toFixed(2)); setText('hact1','h₂='+h2.toFixed(2));
+    setText('yval','y='+y.toFixed(2));
+
+    // z visibility
+    const zEls=[['hsum0','z₁='+z1.toFixed(2)],['hsum1','z₂='+z2.toFixed(2)]];
+    zEls.forEach(([id,val])=>{
+      const el=document.getElementById(id);
+      if(showZ.checked){ el.style.display=''; el.textContent=val; }
+      else el.style.display='none';
+    });
+
+    if(clamp.checked){
+      [['in0',x],['in1',x2],['in2',x3],['h0',h1],['h1',h2],['out',y]].forEach(([id,val])=>{
+        const n=document.getElementById(id); if(n) n.setAttribute('fill-opacity',opacityVal(val).toFixed(2));
+      });
+    } else ['in0','in1','in2','h0','h1','out'].forEach(id=>document.getElementById(id).setAttribute('fill-opacity','1'));
+
+    if(showForm.checked){
+      formulasBox.style.display='block';
+      formulasBox.textContent=[
+        'z₁ = w₁·x + w₃·x₂ + w₅·x₃ + b₁ = '+z1.toFixed(4),
+        'z₂ = w₂·x + w₄·x₂ + w₆·x₃ + b₂ = '+z2.toFixed(4),
+        'h₁ = f(z₁) = '+h1.toFixed(4),
+        'h₂ = f(z₂) = '+h2.toFixed(4),
+        'y  = f(w₇·h₁ + w₈·h₂) = '+y.toFixed(4)+'  (f = '+ACTS[actKey].name+')',
+        '',
+        'Values:',
+        `w₁=${w[1]}, w₂=${w[2]}, w₃=${w[3]}, w₄=${w[4]}, w₅=${w[5]}, w₆=${w[6]}, w₇=${w[7]}, w₈=${w[8]}`,
+        `b₁=${b[1]}, b₂=${b[2]}`
+      ].join('\n');
+    } else formulasBox.style.display='none';
+
+    if(window.__setActivationX) window.__setActivationX(x,true);
+  }
+
+  function setX(v,external=false){
+    v=Math.max(-5,Math.min(5,v));
+    if(!external) slider.value=v;
+    xRead.textContent=v.toFixed(2);
+    forward(v);
+  }
+
+  slider.addEventListener('input',()=>setX(parseFloat(slider.value)));
+  actSel.addEventListener('change',()=>{actKey=actSel.value; forward(parseFloat(slider.value));});
+  [clamp,showForm,showZ].forEach(cb=>cb.addEventListener('change',()=>forward(parseFloat(slider.value))));
+  showWeights.addEventListener('change',()=>{drawEdges(); forward(parseFloat(slider.value));});
+
+  let raf=null,t0=null;const PERIOD=6000;
+  function tick(ts){if(!t0)t0=ts;const p=((ts-t0)%PERIOD)/PERIOD;const x=-5+10*p;setX(x,true);if(autoNet.checked)raf=requestAnimationFrame(tick);}
+  autoNet.addEventListener('change',()=>{if(autoNet.checked){t0=null;cancelAnimationFrame(raf);raf=requestAnimationFrame(tick);}else cancelAnimationFrame(raf);});
+
+  setX(0); raf=requestAnimationFrame(tick);
+})();
+
+/* -------- Activation Plot -------- */
+(()=>{
+  const fnName=document.getElementById('fnName'), rangeLbl=document.getElementById('rangeLbl'),
+        axSlider=document.getElementById('axSlider'), axRead=document.getElementById('axRead'),
+        yRead=document.getElementById('yRead'), auto=document.getElementById('autoAct'),
+        clampY=document.getElementById('clampY'), gridG=document.getElementById('grid'),
+        curve=document.getElementById('curve'), dot=document.getElementById('dot'),
+        projx=document.getElementById('projx'), projy=document.getElementById('projy'),
+        actSel=document.getElementById('actSel');
+  let actKey='relu';
+  const X_MIN=-5,X_MAX=5,PAD=48,W=800,H=420,PW=W-2*PAD,PH=H-2*PAD;
+  let yMin=-1.2,yMax=-1.2+2.4;
+  const xToSvg=x=>PAD+(x-X_MIN)*(PW/(X_MAX-X_MIN));
+  const yToSvg=y=>H-(PAD+(y-yMin)*(PH/(yMax-yMin)));
+
+  function addLine(x1,y1,x2,y2,cls){const ln=document.createElementNS('http://www.w3.org/2000/svg','line');ln.setAttribute('x1',x1);ln.setAttribute('y1',y1);ln.setAttribute('x2',x2);ln.setAttribute('y2',y2);ln.setAttribute('class',cls);gridG.appendChild(ln);}
+  function addText(x,y,txt,anch){const t=document.createElementNS('http://www.w3.org/2000/svg','text');t.setAttribute('x',x);t.setAttribute('y',y);t.setAttribute('class','tickLbl');t.setAttribute('text-anchor',anch);t.textContent=txt;gridG.appendChild(t);}
+  function fmtTick(n){const a=Math.abs(n);if(a>=100||a===0)return n.toFixed(0);if(a<0.0001)return n.toExponential(1);return a<1?n.toFixed(2):n.toFixed(1);}
+  function buildGrid(){
+    gridG.innerHTML='';
+    const gx=10,gy=8;
+    for(let i=0;i<=gx;i++){const x=PAD+i*(PW/gx);addLine(x,PAD,x,H-PAD,'grid');}
+    for(let j=0;j<=gy;j++){const y=PAD+j*(PH/gy);addLine(PAD,y,W-PAD,y,'grid');}
+    if(0>=X_MIN&&0<=X_MAX) addLine(xToSvg(0),PAD,xToSvg(0),H-PAD,'axis');
+    if(0>=yMin&&0<=yMax) addLine(PAD,yToSvg(0),W-PAD,yToSvg(0),'axis');
+    const t=6;
+    for(let i=0;i<=t;i++){const xv=X_MIN+(i/t)*(X_MAX-X_MIN);addText(xToSvg(xv),H-PAD+18,fmtTick(xv),'middle');}
+    for(let j=0;j<=t;j++){const yv=yMin+(j/t)*(yMax-yMin);addText(PAD-10,yToSvg(yv)+4,fmtTick(yv),'end');}
+  }
+  function calcYRange(f){
+    if(clampY.checked){yMin=-1.2;yMax=1.2;rangeLbl.textContent='[~−1,~1]';return;}
+    let lo=Infinity,hi=-Infinity;const STEPS=500;
+    for(let i=0;i<=STEPS;i++){const x=X_MIN+(i/STEPS)*(X_MAX-X_MIN), y=f(x); if(y<lo)lo=y; if(y>hi)hi=y;}
+    if(lo===hi){lo-=1;hi+=1;} const pad=(hi-lo)*0.08; yMin=lo-pad;yMax=hi+pad; rangeLbl.textContent='auto';
+  }
+  function drawCurve(){
+    const f=ACTS[actKey].f; calcYRange(f); buildGrid();
+    let d='M'; const STEPS=650;
+    for(let i=0;i<=STEPS;i++){const x=X_MIN+(i/STEPS)*(X_MAX-X_MIN), y=f(x); d+=(i?' L':'')+xToSvg(x)+','+yToSvg(y);}
+    curve.setAttribute('d',d);
+  }
+  function update(fromSlider=true){
+    actKey=actSel.value; fnName.textContent=ACTS[actKey].name;
+    if(fromSlider){const x=parseFloat(axSlider.value); axRead.textContent=x.toFixed(2); const ns=document.getElementById('xSlider'); if(ns) ns.value=x;}
+    drawCurve();
+    const x=parseFloat(axSlider.value), y=ACTS[actKey].f(x);
+    yRead.textContent=(clampY.checked?Math.max(Math.min(y,1e4),-1e4):y).toFixed(3);
+    const cx=xToSvg(x), cy=yToSvg(y);
+    dot.setAttribute('cx',cx); dot.setAttribute('cy',cy);
+    projx.setAttribute('x1',cx); projx.setAttribute('y1',yToSvg(0)); projx.setAttribute('x2',cx); projx.setAttribute('y2',cy);
+    projy.setAttribute('x1',xToSvg(0)); projy.setAttribute('y1',cy); projy.setAttribute('x2',cx); projy.setAttribute('y2',cy);
+  }
+  window.__setActivationX = x => { axSlider.value=x; axRead.textContent=parseFloat(x).toFixed(2); update(false); };
+
+  axSlider.addEventListener('input',()=>update(true));
+  clampY.addEventListener('change',()=>update(false));
+  actSel.addEventListener('change',()=>update(false));
+
+  let raf=null,t0=null; const PERIOD=6000;
+  function tick(ts){ if(!t0)t0=ts; const p=((ts-t0)%PERIOD)/PERIOD; const x=X_MIN+p*(X_MAX-X_MIN);
+    axSlider.value=x; axRead.textContent=x.toFixed(2); update(false);
+    const ns=document.getElementById('xSlider'); if(ns) ns.value=x;
+    if(autoAct.checked) raf=requestAnimationFrame(tick);
+  }
+  const autoAct=document.getElementById('autoAct');
+  autoAct.addEventListener('change',()=>{ if(autoAct.checked){ t0=null; cancelAnimationFrame(raf); raf=requestAnimationFrame(tick);} else cancelAnimationFrame(raf); });
+
+  update(); raf=requestAnimationFrame(tick);
+})();
+</script>
+
+</body>
+</html>
