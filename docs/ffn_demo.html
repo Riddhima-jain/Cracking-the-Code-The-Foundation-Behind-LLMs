@@ -1,1 +1,439 @@
-<!doctypehtml><html lang="en"><meta charset="UTF-8"><title>Feed-Forward Network (Gossip Loop)</title><meta name="viewport"content="width=device-width,initial-scale=1"><style>:root{--bg:#f5f5f5;--text:#070707;--blue:#8ab6ff;--pink:#ff6db3;--gold:#ffcf6d}*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:system-ui,sans-serif;color:var(--text);min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden}svg{max-width:95vw;height:auto;overflow:visible;font-family:inherit}.link{stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;filter:drop-shadow(0 0 2px rgba(12,12,12,.18));stroke-width:1}.link.drawn{stroke-dasharray:none;stroke-dashoffset:0}.pulse{stroke:url(#gradFlow);stroke-width:2;fill:none;stroke-linecap:round;stroke-dasharray:24 220;stroke-dashoffset:0;opacity:0;animation:travel 3.2s cubic-bezier(.55,.2,.25,1) infinite;mix-blend-mode:screen}.node{stroke:#222;stroke-width:1.2;fill:#b9d9ff;filter:drop-shadow(0 0 4px rgba(176,193,232,.35)) drop-shadow(0 0 12px rgba(120,160,255,.15));transform-origin:center;animation:nodeIdle 6s ease-in-out infinite;animation-delay:calc(var(--i)*.25s)}.node.active{animation:nodeFire .8s ease-out forwards}.text{fill:#060606;font-size:18px;letter-spacing:.5px}@keyframes travel{0%{stroke-dashoffset:0;opacity:0}5%{opacity:1}60%{opacity:1}90%{opacity:0}100%{stroke-dashoffset:-400;opacity:0}}@keyframes nodeIdle{0%,100%{r:14;fill:#b9d9ff}50%{r:14.3;fill:#d1e6ff}}@keyframes nodeFire{0%{r:14;fill:#b9d9ff}30%{r:17;fill:#fff2a3}60%{r:19;fill:#ffd890;filter:drop-shadow(0 0 6px #ffca55) drop-shadow(0 0 12px rgba(255,202,85,.5))}100%{r:14;fill:#b9d9ff}}.scene{animation:drift 40s linear infinite;transform-origin:50% 50%}@keyframes drift{0%{transform:scale(1) translate(0,0)}50%{transform:scale(1.02) translate(8px,-6px)}100%{transform:scale(1) translate(0,0)}}.controls{position:fixed;top:12px;left:12px;display:none;gap:.5rem;flex-wrap:wrap;max-width:340px;z-index:20}.controls button,.controls input{font:inherit}.controls button{background:#a6bce8;color:var(--text);border:1px solid #2e4365;padding:.45rem .75rem;border-radius:6px;font-size:.7rem;cursor:pointer;letter-spacing:.5px}.controls button:hover{background:#243754;color:#fff}.ctrl-group{display:flex;flex-direction:column;gap:.25rem;background:#172438;padding:.55rem .65rem .6rem;border:1px solid #2a3a53;border-radius:8px;flex:1 1 100%}.ctrl-group label{font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#94a8c6}.ctrl-row{display:flex;gap:.4rem;align-items:center}.ctrl-row span{font-size:.65rem;background:#8cb3e8;padding:.2rem .45rem;border-radius:4px;min-width:2.2rem;text-align:center;color:var(--text)}input[type=range]{width:100%}.narrative{position:fixed;top:50%;left:48px;transform:translateY(-50%);padding:.45rem .85rem .5rem;border:1px solid #253751;background:#a6bce8;backdrop-filter:blur(4px) saturate(130%);-webkit-backdrop-filter:blur(4px) saturate(130%);border-radius:30px;font-size:.72rem;letter-spacing:.32px;font-weight:500;color:#030303;line-height:1.15;width:230px;height:46px;display:flex;align-items:center;justify-content:flex-start;text-align:center;z-index:30;pointer-events:none}.narrative span{position:absolute;inset:0;display:flex;align-items:center;padding:0 .25rem;opacity:0;transition:opacity .45s ease;white-space:normal;text-shadow:0 0 4px rgba(180,210,255,.25)}.narrative span.active{opacity:1}body.phase-expand circle[id^=in_]{filter:drop-shadow(0 0 5px var(--blue)) drop-shadow(0 0 14px rgba(138,182,255,.5))}body.phase-activate circle[id^=hid_]{filter:drop-shadow(0 0 6px var(--pink)) drop-shadow(0 0 15px rgba(255,109,179,.5))}body.phase-compress circle[id^=out_]{filter:drop-shadow(0 0 6px var(--gold)) drop-shadow(0 0 14px rgba(255,207,109,.45))}@media (prefers-reduced-motion:reduce){.node,.pulse,.scene{animation:none}.narrative{backdrop-filter:none;-webkit-backdrop-filter:none}.narrative span{transition:none}}</style><div class="controls"><button id="replay">Replay Pass</button> <button id="togglePulse">Toggle Pulse</button><div class="ctrl-group"><label for="fanIH">Input → Hidden fan-out</label><div class="ctrl-row"><input id="fanIH"type="range"min="1"max="12"value="12"> <span id="fanIHVal">12</span></div></div><div class="ctrl-group"><label for="fanHO">Hidden → Output fan-out</label><div class="ctrl-row"><input id="fanHO"type="range"min="1"max="6"value="6"> <span id="fanHOVal">6</span></div></div><button id="regenerate">Apply Density</button></div><div class="narrative"id="narrative"><span data-phase="expand">Gossip starts flowing…</span> <span data-phase="activate">It picks up spice & sweetness…</span> <span data-phase="compress">It returns refined & distilled.</span></div><svg id="nn"viewBox="0 0 1325 901"role="img"aria-label="Animated feed-forward network"><defs><marker id="arrow"viewBox="0 -5 10 10"markerWidth="7"markerHeight="7"orient="auto"refX="8.5"><path d="M0,-5L10,0L0,5"fill="#555"stroke="#555"/></marker><linearGradient id="gradFlow"x1="0%"y1="0%"x2="100%"y2="0%"><stop offset="0%"stop-color="#ffffff"stop-opacity="0"/><stop offset="25%"stop-color="#8ab6ff"stop-opacity=".9"/><stop offset="55%"stop-color="#ff6db3"stop-opacity=".95"/><stop offset="85%"stop-color="#ffcf6d"stop-opacity=".8"/><stop offset="100%"stop-color="#ffffff"stop-opacity="0"/></linearGradient></defs><g class="scene"id="scene"></g></svg><script>const qParams=new URLSearchParams(location.search),SPEED=parseFloat(qParams.get("speed")||"1"),CONFIG={LINK_BASE_DELAY:80,LINK_STAGGER:22,LINK_DRAW:800,NODE_DELAY:140,NODE_ACTIVE:520,GAP_AFTER_PASS:480},ms=e=>e*SPEED,scene=document.getElementById("scene"),X_INPUT=461,X_HIDDEN=641,X_OUTPUT=821,inputYs=[312.5,352.5,392.5,432.5,472.5,512.5],hiddenYs=[192.5,232.5,272.5,312.5,352.5,392.5,432.5,472.5,512.5,552.5,592.5,632.5],outputYs=[312.5,352.5,392.5,432.5,472.5,512.5],edgePalette=["#7d7dff","#9f9fff","#7e7eff","#ff3232","#3f3fff","#ffafaf","#ff6565","#4d4dff","#ff9696","#8c8cff"];function clearScene(){for(;scene.firstChild;)scene.removeChild(scene.firstChild)}function mkText(e,t,a){const s=document.createElementNS("http://www.w3.org/2000/svg","text");return s.setAttribute("class","text"),s.setAttribute("dy",".35em"),s.setAttribute("x",e),s.setAttribute("y",t),s.textContent=a,s}function buildNodes(){let e=0;const t=(t,a,s,n)=>{const r=document.createElementNS("http://www.w3.org/2000/svg","circle");r.setAttribute("class","node"),r.setAttribute("r","14"),r.setAttribute("cx",t),r.setAttribute("cy",a),r.id=`${s}_${n}`,r.style.setProperty("--i",e++),scene.appendChild(r)};inputYs.forEach((e,a)=>t(461,e,"in",a)),hiddenYs.forEach((e,a)=>t(641,e,"hid",a)),outputYs.forEach((e,a)=>t(821,e,"out",a)),scene.append(mkText(426,672.5,"Input Layer ∈ ℝ⁶"),mkText(606,672.5,"Hidden Layer ∈ ℝ¹²"),mkText(786,672.5,"Output Layer ∈ ℝ⁶"))}function generateEdges(e,t){const a=scene.querySelector("circle.node"),s=(e,t,a)=>a>=t.length?t:t.map(t=>({y:t,d:Math.abs(t-e)})).sort((e,t)=>e.d-t.d).slice(0,a).map(e=>e.y);let n=0;function r(e,t,s,r){const o=(e+s)/2,i=`M${e},${t}C${o},${t} ${o},${r} ${s},${r}`,c=document.createElementNS("http://www.w3.org/2000/svg","path");c.setAttribute("class","link"),c.setAttribute("marker-end","url(#arrow)"),c.setAttribute("d",i),c.setAttribute("stroke",edgePalette[n++%edgePalette.length]),c.setAttribute("fill","none"),c.setAttribute("stroke-width",".9"),scene.insertBefore(c,a)}inputYs.forEach(t=>s(t,hiddenYs,e).forEach(e=>r(461,t,641,e))),hiddenYs.forEach(e=>s(e,outputYs,t).forEach(t=>r(641,e,821,t)))}let passInterval,links=[],nodes=[],PASS_INTERVAL_MS=0;function computePassInterval(){return 3200}function initAnimation(){links=[...scene.querySelectorAll(".link")],nodes=[...scene.querySelectorAll(".node")],links.forEach(e=>{const t=e.getTotalLength();e.dataset.len=t,e.style.strokeDasharray="0 "+t,e.style.strokeDashoffset="0",e.hasAttribute("marker-end")&&(e.dataset.markerEnd=e.getAttribute("marker-end"),e.removeAttribute("marker-end"))}),animateLinks(),PASS_INTERVAL_MS=computePassInterval(),window.PASS_INTERVAL_MS=PASS_INTERVAL_MS,window.PERIOD=PASS_INTERVAL_MS,console.log("Animation timing set:",PASS_INTERVAL_MS),setupNarrativePhases(),window.matchMedia("(prefers-reduced-motion: reduce)").matches?links.forEach(e=>{e.style.strokeDasharray="none",e.dataset.markerEnd&&e.setAttribute("marker-end",e.dataset.markerEnd)}):startPassLoop()}function animateLinks(){const e=ms(CONFIG.LINK_BASE_DELAY),t=ms(CONFIG.LINK_STAGGER),a=ms(CONFIG.LINK_DRAW);links.forEach((s,n)=>{const r=+s.dataset.len,o=performance.now()+e+n*t;requestAnimationFrame(function e(t){if(t<o)return void requestAnimationFrame(e);const n=Math.min(1,(t-o)/a),i=(n<.5?4*n*n*n:1-Math.pow(-2*n+2,3)/2)*r;s.style.strokeDasharray=i+" "+(r-i+.5),n<1?requestAnimationFrame(e):(s.classList.add("drawn"),s.style.strokeDasharray="none",s.dataset.markerEnd&&s.setAttribute("marker-end",s.dataset.markerEnd))})}),setTimeout(addPulseOverlays,e+links.length*t+a+150)}function addPulseOverlays(){window.matchMedia("(prefers-reduced-motion: reduce)").matches||links.forEach((e,t)=>{if(e.dataset.pulseAdded)return;e.dataset.pulseAdded="1";const a=e.cloneNode(!1);a.removeAttribute("marker-end"),a.classList.add("pulse"),a.style.animationDelay=.08*t+"s",e.after(a)})}function forwardPass(){console.log("Forward pass starting, nodes:",nodes.length),nodes.forEach(e=>e.classList.remove("active")),nodes.forEach((e,t)=>{setTimeout(()=>{console.log("Activating node:",e.id),e.classList.add("active"),setTimeout(()=>e.classList.remove("active"),600)},150*t)})}function startPassLoop(){forwardPass(),passInterval=setInterval(forwardPass,PASS_INTERVAL_MS),console.log("Pass loop started with interval:",PASS_INTERVAL_MS)}let phaseDefs=[],narrativeTimers=[];const narrativeSpans=document.querySelectorAll("#narrative span[data-phase]");function setupNarrativePhases(){const e=4e3;phaseDefs=[{key:"expand",dur:e/3},{key:"activate",dur:e/3},{key:"compress",dur:e/3}],console.log("Narrative phases setup with 4s cycle:",phaseDefs)}function runNarrativeCycle(){narrativeTimers.forEach(e=>clearTimeout(e)),narrativeTimers=[],document.body.classList.remove("phase-expand","phase-activate","phase-compress"),narrativeSpans.forEach(e=>e.classList.remove("active"));let e=0;phaseDefs.forEach((t,a)=>{narrativeTimers.push(setTimeout(()=>{a>0&&document.body.classList.remove("phase-"+phaseDefs[a-1].key),document.body.classList.add("phase-"+t.key),narrativeSpans.forEach(e=>e.classList.toggle("active",e.dataset.phase===t.key)),console.log(`Activating phase: ${t.key}`),a===phaseDefs.length-1&&narrativeTimers.push(setTimeout(()=>{document.body.classList.remove("phase-"+t.key),narrativeSpans.forEach(e=>e.classList.remove("active"))},t.dur-300))},e)),e+=t.dur})}console.log("Found narrative spans:",narrativeSpans.length);const _origForwardPass=forwardPass;function regenerate(){clearInterval(passInterval),scene.querySelectorAll(".pulse").forEach(e=>e.remove()),clearScene(),buildNodes();generateEdges(+document.getElementById("fanIH").value,+document.getElementById("fanHO").value),initAnimation()}forwardPass=function(){runNarrativeCycle(),_origForwardPass()},document.getElementById("fanIH").addEventListener("input",e=>{document.getElementById("fanIHVal").textContent=e.target.value}),document.getElementById("fanHO").addEventListener("input",e=>{document.getElementById("fanHOVal").textContent=e.target.value}),document.getElementById("regenerate").addEventListener("click",regenerate),document.getElementById("replay").addEventListener("click",()=>{clearInterval(passInterval),links.forEach(e=>{const t=+e.dataset.len;e.classList.remove("drawn"),e.style.strokeDasharray="0 "+t,e.hasAttribute("marker-end")&&(e.dataset.markerEnd=e.getAttribute("marker-end"),e.removeAttribute("marker-end"))}),scene.querySelectorAll(".pulse").forEach(e=>e.remove()),animateLinks(),PASS_INTERVAL_MS=computePassInterval(),setupNarrativePhases(),startPassLoop()});let pulseOn=!0;document.getElementById("togglePulse").addEventListener("click",()=>{pulseOn=!pulseOn,scene.querySelectorAll(".pulse").forEach(e=>e.style.display=pulseOn?"":"none")}),regenerate(),PASS_INTERVAL_MS=4e3,window.PASS_INTERVAL_MS=4e3,window.PERIOD=4e3,setTimeout(()=>{console.log("Starting immediate animation for capture..."),window.matchMedia("(prefers-reduced-motion: reduce)").matches||(clearInterval(passInterval),forwardPass(),passInterval=setInterval(forwardPass,4e3),console.log("Animation started with 4s interval"))},100),function(){const e=new URLSearchParams(location.search);e.has("capture")&&(document.querySelector(".controls").style.display="none","1"===e.get("nodrift")&&(document.querySelector(".scene").style.animation="none"))}(),function(){const e=new URLSearchParams(location.search);if(e.has("captureExact")){if(document.getElementById("fanIH").value=e.get("ih")||12,document.getElementById("fanHO").value=e.get("ho")||6,"1"===e.get("nonarr")){const e=document.getElementById("narrative");e&&(e.style.display="none")}"1"===e.get("nopulse")&&(window.addPulseOverlays=function(){}),regenerate()}}(),function(){const e=document.getElementById("narrative");function t(){const t=window.innerHeight;e.style.bottom=t>1100?"170px":t<580?"70px":"clamp(80px,12vh,170px)"}e&&(window.addEventListener("resize",()=>{clearTimeout(t._t),t._t=setTimeout(t,80)}),t())}()</script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Feed-Forward Network (Gossip Loop)</title>
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<style>
+  :root {
+    --bg:#f5f5f5;
+    --text:#070707;
+    --blue:#8ab6ff;
+    --pink:#ff6db3;
+    --gold:#ffcf6d;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0;background:var(--bg);font-family:system-ui,sans-serif;color:var(--text);
+    min-height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;
+  }
+  svg { max-width:95vw;height:auto;overflow:visible;font-family:inherit; }
+
+  .link {
+    stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke;
+    filter:drop-shadow(0 0 2px rgba(12,12,12,.18));stroke-width:1;
+  }
+  .link.drawn { stroke-dasharray:none;stroke-dashoffset:0; }
+
+  .pulse {
+    stroke:url(#gradFlow);stroke-width:2;fill:none;stroke-linecap:round;
+    stroke-dasharray:24 220;stroke-dashoffset:0;opacity:0;
+    animation:travel 3.2s cubic-bezier(.55,.2,.25,1) infinite;mix-blend-mode:screen;
+  }
+
+  .node {
+    stroke:#222;stroke-width:1.2;fill:#b9d9ff;
+    filter:drop-shadow(0 0 4px rgba(176,193,232,.35)) drop-shadow(0 0 12px rgba(120,160,255,.15));
+    transform-origin:center;animation:nodeIdle 6s ease-in-out infinite;
+    animation-delay:calc(var(--i)*0.25s);
+  }
+  .node.active { animation:nodeFire .8s ease-out forwards; }
+  .text { fill:#060606;font-size:18px;letter-spacing:.5px; }
+
+  @keyframes travel {
+    0% { stroke-dashoffset:0;opacity:0; }
+    5% { opacity:1; }
+    60% { opacity:1; }
+    90% { opacity:0; }
+    100% { stroke-dashoffset:-400;opacity:0; }
+  }
+  @keyframes nodeIdle { 0%,100% { r:14;fill:#b9d9ff; } 50% { r:14.3;fill:#d1e6ff; } }
+  @keyframes nodeFire {
+    0% { r:14;fill:#b9d9ff; }
+    30% { r:17;fill:#fff2a3; }
+    60% { r:19;fill:#ffd890;filter:drop-shadow(0 0 6px #ffca55) drop-shadow(0 0 12px rgba(255,202,85,.5)); }
+    100% { r:14;fill:#b9d9ff; }
+  }
+  .scene { animation:drift 40s linear infinite;transform-origin:50% 50%; }
+  @keyframes drift {
+    0% { transform:scale(1) translate(0,0); }
+    50% { transform:scale(1.02) translate(8px,-6px); }
+    100% { transform:scale(1) translate(0,0); }
+  }
+
+  .controls {
+    position:fixed;top:12px;left:12px;display:none;gap:.5rem;flex-wrap:wrap;
+    max-width:340px;z-index:20;
+  }
+  .controls button, .controls input { font:inherit; }
+  .controls button {
+    background:#a6bce8;color:var(--text);border:1px solid #2e4365;
+    padding:.45rem .75rem;border-radius:6px;font-size:.7rem;cursor:pointer;letter-spacing:.5px;
+  }
+  .controls button:hover { background:#243754;color:#fff; }
+  .ctrl-group {
+    display:flex;flex-direction:column;gap:.25rem;background:#172438;
+    padding:.55rem .65rem .6rem;border:1px solid #2a3a53;border-radius:8px;flex:1 1 100%;
+  }
+  .ctrl-group label {
+    font-size:.6rem;letter-spacing:.1em;text-transform:uppercase;color:#94a8c6;
+  }
+  .ctrl-row { display:flex;gap:.4rem;align-items:center; }
+  .ctrl-row span {
+    font-size:.65rem;background:#8cb3e8;padding:.2rem .45rem;border-radius:4px;
+    min-width:2.2rem;text-align:center;color:var(--text);
+  }
+  input[type=range]{ width:100%; }
+
+  .narrative {
+    position:fixed;top:50%;left:48px;transform:translateY(-50%);
+    padding:.45rem .85rem .5rem;border:1px solid #253751;background:#a6bce8;
+    backdrop-filter:blur(4px) saturate(130%);-webkit-backdrop-filter:blur(4px) saturate(130%);
+    border-radius:30px;font-size:.72rem;letter-spacing:.32px;font-weight:500;
+    color:#030303;line-height:1.15;width:230px;height:46px;display:flex;
+    align-items:center;justify-content:flex-start;text-align:center;z-index:30;pointer-events:none;
+  }
+  .narrative span {
+    position:absolute;inset:0;display:flex;align-items:center;padding:0 .25rem;
+    opacity:0;transition:opacity .45s ease;white-space:normal;text-shadow:0 0 4px rgba(180,210,255,.25);
+  }
+  .narrative span.active { opacity:1; }
+
+  body.phase-expand  circle[id^="in_"]  { filter:drop-shadow(0 0 5px var(--blue)) drop-shadow(0 0 14px rgba(138,182,255,.5)); }
+  body.phase-activate circle[id^="hid_"] { filter:drop-shadow(0 0 6px var(--pink)) drop-shadow(0 0 15px rgba(255,109,179,.5)); }
+  body.phase-compress circle[id^="out_"] { filter:drop-shadow(0 0 6px var(--gold)) drop-shadow(0 0 14px rgba(255,207,109,.45)); }
+
+  @media (prefers-reduced-motion: reduce){
+    .scene,.node,.pulse { animation:none; }
+    .narrative { backdrop-filter:none;-webkit-backdrop-filter:none; }
+    .narrative span { transition:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="controls">
+  <button id="replay">Replay Pass</button>
+  <button id="togglePulse">Toggle Pulse</button>
+  <div class="ctrl-group">
+    <label for="fanIH">Input → Hidden fan-out</label>
+    <div class="ctrl-row">
+      <input id="fanIH" type="range" min="1" max="12" value="12">
+      <span id="fanIHVal">12</span>
+    </div>
+  </div>
+  <div class="ctrl-group">
+    <label for="fanHO">Hidden → Output fan-out</label>
+    <div class="ctrl-row">
+      <input id="fanHO" type="range" min="1" max="6" value="6">
+      <span id="fanHOVal">6</span>
+    </div>
+  </div>
+  <button id="regenerate">Apply Density</button>
+</div>
+
+<div class="narrative" id="narrative">
+  <span data-phase="expand">Gossip starts flowing…</span>
+  <span data-phase="activate">It picks up spice & sweetness…</span>
+  <span data-phase="compress">It returns refined & distilled.</span>
+</div>
+
+<svg id="nn" viewBox="0 0 1325 901" role="img" aria-label="Animated feed-forward network">
+  <defs>
+    <marker id="arrow" viewBox="0 -5 10 10" markerWidth="7" markerHeight="7" orient="auto" refX="8.5">
+      <path d="M0,-5L10,0L0,5" fill="#555" stroke="#555"/>
+    </marker>
+    <linearGradient id="gradFlow" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0"/>
+      <stop offset="25%" stop-color="#8ab6ff" stop-opacity=".9"/>
+      <stop offset="55%" stop-color="#ff6db3" stop-opacity=".95"/>
+      <stop offset="85%" stop-color="#ffcf6d" stop-opacity=".8"/>
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0"/>
+    </linearGradient>
+  </defs>
+  <g class="scene" id="scene"></g>
+</svg>
+
+<script>
+/* ---------- Config & Timing ---------- */
+const qParams = new URLSearchParams(location.search);
+const SPEED = parseFloat(qParams.get('speed') || '1'); // 1 = baseline; higher = slower
+const CONFIG = {
+  LINK_BASE_DELAY: 80,
+  LINK_STAGGER: 22,
+  LINK_DRAW: 800,
+  NODE_DELAY: 140,
+  NODE_ACTIVE: 520,
+  GAP_AFTER_PASS: 480
+};
+const ms = v => v * SPEED;
+
+/* ---------- Layout Data ---------- */
+const scene=document.getElementById('scene');
+const X_INPUT=461,X_HIDDEN=641,X_OUTPUT=821;
+const inputYs=[312.5,352.5,392.5,432.5,472.5,512.5];
+const hiddenYs=[192.5,232.5,272.5,312.5,352.5,392.5,432.5,472.5,512.5,552.5,592.5,632.5];
+const outputYs=[312.5,352.5,392.5,432.5,472.5,512.5];
+const edgePalette=['#7d7dff','#9f9fff','#7e7eff','#ff3232','#3f3fff','#ffafaf','#ff6565','#4d4dff','#ff9696','#8c8cff'];
+
+/* ---------- Build Nodes/Edges ---------- */
+function clearScene(){ while(scene.firstChild) scene.removeChild(scene.firstChild); }
+function mkText(x,y,text){
+  const t=document.createElementNS('http://www.w3.org/2000/svg','text');
+  t.setAttribute('class','text');t.setAttribute('dy','.35em');t.setAttribute('x',x);t.setAttribute('y',y);
+  t.textContent=text;return t;
+}
+function buildNodes(){
+  let idx=0;
+  const add=(x,y,layer,i)=>{
+    const c=document.createElementNS('http://www.w3.org/2000/svg','circle');
+    c.setAttribute('class','node');c.setAttribute('r','14');c.setAttribute('cx',x);c.setAttribute('cy',y);
+    c.id=`${layer}_${i}`;c.style.setProperty('--i',idx++);scene.appendChild(c);
+  };
+  inputYs.forEach((y,i)=>add(X_INPUT,y,'in',i));
+  hiddenYs.forEach((y,i)=>add(X_HIDDEN,y,'hid',i));
+  outputYs.forEach((y,i)=>add(X_OUTPUT,y,'out',i));
+  scene.append(
+    mkText(426,672.5,'Input Layer ∈ ℝ⁶'),
+    mkText(606,672.5,'Hidden Layer ∈ ℝ¹²'),
+    mkText(786,672.5,'Output Layer ∈ ℝ⁶')
+  );
+}
+function generateEdges(fanOutIH,fanOutHO){
+  const firstNode=scene.querySelector('circle.node');
+  const pick=(sy,targets,k)=>k>=targets.length?targets:targets.map(y=>({y,d:Math.abs(y-sy)}))
+    .sort((a,b)=>a.d-b.d).slice(0,k).map(o=>o.y);
+  let colorIdx=0;
+  function addEdge(x1,y1,x2,y2){
+    const mid=(x1+x2)/2;
+    const d=`M${x1},${y1}C${mid},${y1} ${mid},${y2} ${x2},${y2}`;
+    const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    p.setAttribute('class','link');p.setAttribute('marker-end','url(#arrow)');
+    p.setAttribute('d',d);p.setAttribute('stroke',edgePalette[colorIdx++%edgePalette.length]);
+    p.setAttribute('fill','none');p.setAttribute('stroke-width','.9');
+    scene.insertBefore(p,firstNode);
+  }
+  inputYs.forEach(y=>pick(y,hiddenYs,fanOutIH).forEach(h=>addEdge(X_INPUT,y,X_HIDDEN,h)));
+  hiddenYs.forEach(y=>pick(y,outputYs,fanOutHO).forEach(o=>addEdge(X_HIDDEN,y,X_OUTPUT,o)));
+}
+
+/* ---------- Animation ---------- */
+let links=[],nodes=[],passInterval, PASS_INTERVAL_MS=0;
+function computePassInterval(){
+  // Much shorter interval - just the core animation cycle
+  // The pulse animation is 3.2s, so align with that
+  return 3200; // Fixed 3.2 second cycle to match pulse animation
+}
+function initAnimation(){
+  links=[...scene.querySelectorAll('.link')];
+  nodes=[...scene.querySelectorAll('.node')];
+  links.forEach(p=>{
+    const len=p.getTotalLength();
+    p.dataset.len=len;
+    p.style.strokeDasharray='0 '+len; // start hidden
+    p.style.strokeDashoffset='0';
+    if(p.hasAttribute('marker-end')){
+      p.dataset.markerEnd=p.getAttribute('marker-end');
+      p.removeAttribute('marker-end');
+    }
+  });
+  animateLinks();
+  PASS_INTERVAL_MS=computePassInterval();
+  window.PASS_INTERVAL_MS=PASS_INTERVAL_MS;
+  window.PERIOD=PASS_INTERVAL_MS; // Also expose as PERIOD for capture script
+  console.log('Animation timing set:', PASS_INTERVAL_MS);
+  setupNarrativePhases();
+  if(!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
+    // Start animation loop immediately - don't wait for link drawing to finish
+    startPassLoop();
+  }else{
+    links.forEach(p=>{
+      p.style.strokeDasharray='none';
+      if(p.dataset.markerEnd) p.setAttribute('marker-end',p.dataset.markerEnd);
+    });
+  }
+}
+function animateLinks(){
+  const base=ms(CONFIG.LINK_BASE_DELAY), step=ms(CONFIG.LINK_STAGGER), dur=ms(CONFIG.LINK_DRAW);
+  links.forEach((p,i)=>{
+    const len=+p.dataset.len,start=performance.now()+base+i*step;
+    function tick(now){
+      if(now<start){ requestAnimationFrame(tick); return; }
+      const t=Math.min(1,(now-start)/dur);
+      const eased=t<0.5?4*t*t*t:1-Math.pow(-2*t+2,3)/2;
+      const visible=eased*len;
+      p.style.strokeDasharray=visible+' '+(len-visible+0.5);
+      if(t<1){
+        requestAnimationFrame(tick);
+      }else{
+        p.classList.add('drawn');
+        p.style.strokeDasharray='none';
+        if(p.dataset.markerEnd) p.setAttribute('marker-end',p.dataset.markerEnd);
+      }
+    }
+    requestAnimationFrame(tick);
+  });
+  setTimeout(addPulseOverlays, base+links.length*step+dur+150);
+}
+function addPulseOverlays(){
+  if(window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  links.forEach((p,i)=>{
+    if(p.dataset.pulseAdded) return;
+    p.dataset.pulseAdded='1';
+    const c=p.cloneNode(false);
+    c.removeAttribute('marker-end');
+    c.classList.add('pulse');
+    c.style.animationDelay=(i*0.08)+'s';
+    p.after(c);
+  });
+}
+function forwardPass(){
+  console.log('Forward pass starting, nodes:', nodes.length);
+  nodes.forEach(n=>n.classList.remove('active'));
+  nodes.forEach((n,i)=>{
+    setTimeout(()=>{
+      console.log('Activating node:', n.id);
+      n.classList.add('active');
+      // Normal active time for natural look
+      setTimeout(()=>n.classList.remove('active'), 600);
+    }, i * 150); // Moderate activation sequence
+  });
+}
+function startPassLoop(){
+  forwardPass();
+  passInterval=setInterval(forwardPass, PASS_INTERVAL_MS);
+  console.log('Pass loop started with interval:', PASS_INTERVAL_MS);
+}
+
+/* ---------- Narrative (sync to PASS_INTERVAL_MS) ---------- */
+let phaseDefs=[], narrativeTimers=[];
+const narrativeSpans=document.querySelectorAll('#narrative span[data-phase]');
+console.log('Found narrative spans:', narrativeSpans.length);
+function setupNarrativePhases(){
+  const d = 4000; // Fixed duration
+  phaseDefs=[
+    {key:'expand',dur:d/3},
+    {key:'activate',dur:d/3},
+    {key:'compress',dur:d/3}
+  ];
+  console.log('Narrative phases setup with 4s cycle:', phaseDefs);
+}
+function runNarrativeCycle(){
+  narrativeTimers.forEach(id=>clearTimeout(id)); narrativeTimers=[];
+  document.body.classList.remove('phase-expand','phase-activate','phase-compress');
+  narrativeSpans.forEach(s=>s.classList.remove('active'));
+  
+  // Start with first phase immediately
+  let t=0;
+  phaseDefs.forEach((ph,i)=>{
+    narrativeTimers.push(setTimeout(()=>{
+      if(i>0) document.body.classList.remove('phase-'+phaseDefs[i-1].key);
+      document.body.classList.add('phase-'+ph.key);
+      narrativeSpans.forEach(s=>s.classList.toggle('active', s.dataset.phase===ph.key));
+      console.log(`Activating phase: ${ph.key}`); // Debug log
+      if(i===phaseDefs.length-1){
+        narrativeTimers.push(setTimeout(()=>{
+          document.body.classList.remove('phase-'+ph.key);
+          narrativeSpans.forEach(s=>s.classList.remove('active'));
+        }, ph.dur-300));
+      }
+    }, t));
+    t+=ph.dur;
+  });
+}
+const _origForwardPass=forwardPass;
+forwardPass=function(){ 
+  runNarrativeCycle(); 
+  _origForwardPass(); 
+};
+
+/* ---------- Regenerate / UI ---------- */
+function regenerate(){
+  clearInterval(passInterval);
+  scene.querySelectorAll('.pulse').forEach(p=>p.remove());
+  clearScene(); buildNodes();
+  const fanIH=+document.getElementById('fanIH').value;
+  const fanHO=+document.getElementById('fanHO').value;
+  generateEdges(fanIH,fanHO);
+  initAnimation();
+}
+
+document.getElementById('fanIH').addEventListener('input',e=>{ document.getElementById('fanIHVal').textContent=e.target.value; });
+document.getElementById('fanHO').addEventListener('input',e=>{ document.getElementById('fanHOVal').textContent=e.target.value; });
+document.getElementById('regenerate').addEventListener('click',regenerate);
+document.getElementById('replay').addEventListener('click',()=>{
+  clearInterval(passInterval);
+  links.forEach(p=>{
+    const len=+p.dataset.len;
+    p.classList.remove('drawn');
+    p.style.strokeDasharray='0 '+len;
+    if(p.hasAttribute('marker-end')){
+      p.dataset.markerEnd=p.getAttribute('marker-end');
+      p.removeAttribute('marker-end');
+    }
+  });
+  scene.querySelectorAll('.pulse').forEach(p=>p.remove());
+  animateLinks();
+  PASS_INTERVAL_MS=computePassInterval();
+  setupNarrativePhases();
+  startPassLoop();
+});
+let pulseOn=true;
+document.getElementById('togglePulse').addEventListener('click',()=>{
+  pulseOn=!pulseOn;
+  scene.querySelectorAll('.pulse').forEach(p=>p.style.display=pulseOn?'':'none');
+});
+
+/* ---------- Init ---------- */
+regenerate();
+
+// Set fixed timing for capture
+PASS_INTERVAL_MS = 4000;
+window.PASS_INTERVAL_MS = 4000;
+window.PERIOD = 4000;
+
+// Start animation immediately for capture - no delays
+setTimeout(() => {
+  console.log('Starting immediate animation for capture...');
+  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    clearInterval(passInterval);
+    // Start animation loop with fixed 4-second interval
+    forwardPass();
+    passInterval = setInterval(forwardPass, 4000);
+    console.log('Animation started with 4s interval');
+  }
+}, 100);
+
+/* ---------- Capture Modes ---------- */
+(function(){
+  const q=new URLSearchParams(location.search);
+  if(!q.has('capture')) return;
+  document.querySelector('.controls').style.display='none';
+  if(q.get('nodrift')==='1') document.querySelector('.scene').style.animation='none';
+  // Remove the loop limit - let it run continuously for GIF capture
+})();
+(function(){
+  const q=new URLSearchParams(location.search);
+  if(!q.has('captureExact')) return;
+  document.getElementById('fanIH').value=q.get('ih')||12;
+  document.getElementById('fanHO').value=q.get('ho')||6;
+  if(q.get('nonarr')==='1'){ const narr=document.getElementById('narrative'); if(narr) narr.style.display='none'; }
+  if(q.get('nopulse')==='1'){ window.addPulseOverlays=function(){}; }
+  regenerate();
+})();
+
+/* ---------- Narrative vertical adjust ---------- */
+(function(){
+  const el=document.getElementById('narrative'); if(!el) return;
+  function adjust(){
+    const h=window.innerHeight;
+    if(h>1100) el.style.bottom='170px';
+    else if(h<580) el.style.bottom='70px';
+    else el.style.bottom='clamp(80px,12vh,170px)';
+  }
+  window.addEventListener('resize',()=>{ clearTimeout(adjust._t); adjust._t=setTimeout(adjust,80); });
+  adjust();
+})();
+</script>
+</body>
+</html>
