@@ -55,13 +55,28 @@ Includes spotlight dance floor metaphors and a visual walk-through of attention 
 
 ---
 
+### ✅ Episode 4 – [From Gossip to Insight: Feedforward Networks & Activation Functions](https://medium.com/@jainriddhima00) *(https://medium.com/@jainriddhima00/from-gossip-to-insight-understanding-feedforward-networks-activation-functions-f626c8115e08?sk=cb1bb40602d5aa8ad007e03f9150e1ce)*  
+> Notebook: [`FFN_Activations.ipynb`](https://github.com/Riddhima-jain/Cracking-the-Code-The-Foundation-Behind-LLMs/blob/main/FFN_Activations.ipynb)  
+> Interactive Demos: [FFN Demo](https://riddhima-jain.github.io/Cracking-the-Code-The-Foundation-Behind-LLMs/demos/ffn_demo.min.html) | [Activations Demo](https://riddhima-jain.github.io/Cracking-the-Code-The-Foundation-Behind-LLMs/demos/activations_demo.min.html)
+
+What’s covered:
+- Feedforward Networks (FFNs) as the **gossip table** where tokens get refined
+- Breaking down **weights, biases, and activations**
+- The “expand → transform → compress” pipeline
+- Activation personalities (ReLU, Sigmoid, Tanh, GELU, Swish)
+- Interactive visualizations: how stories (signals) get reshaped  
+*(inspired by NN-SVG by Alex Lenail for diagrams)*
+
+---
+
 ## 🔜 Coming Soon
 
 | Episode | Theme |
 |--------|-------|
-| Episode 4 | **How AI Dances — Feedforward Layers & Activation Functions** *(dance practice meets neural math)* |
 | Episode 5 | **How AI Learns From Mistakes — Loss Functions & Gradient Descent** |
 | Episode 6 | **Attention is All You Need — The Transformer Revolution** |
+
+---
 
 ---
 
