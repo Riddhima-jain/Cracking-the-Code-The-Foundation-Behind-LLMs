@@ -172,6 +172,8 @@ const fns = {
   swish: { name: "Swish", f: x => x / (1 + Math.exp(-x)) }
 };
 
+
+
 /* -------- Network -------- */
 (()=>{
   // Data (same numbers) mapped to unified w indices:
@@ -184,7 +186,7 @@ const fns = {
   const q=s=>document.querySelector(s);
   const slider=q('#xSlider'),xRead=q('#xRead'),autoNet=q('#autoNet'),
         clamp=q('#clamp'),showForm=q('#showForm'),showWeights=q('#showWeights'),
-        showZ=q('#showZ'),formulasBox=q('#formulas'),edgesG=q('#edges'),actSel=q('#actSel');
+        showZ=q('#showZ'),formulasBox=q('#formulas'),edgesG=q('#edges');
 
   function magClass(val){const a=Math.abs(val);return a>=0.65?'lg':a>=0.35?'md':'sm';}
   function path(x1,y1,x2,y2){const mid=(x1+x2)/2,off=(y2-y1)*0.07;return`M${x1},${y1} C${mid},${y1+off} ${mid},${y2-off} ${x2},${y2}`;}
@@ -236,7 +238,7 @@ const fns = {
   const opacityVal=v=>0.25+0.75*Math.min(1,Math.abs(v));
 
   function forward(x){
-    const f=ACTS[actKey].f;
+    const f=fns[actKey].f;
     const z1=w[1]*x + w[3]*x2 + w[5]*x3 + b[1];
     const z2=w[2]*x + w[4]*x2 + w[6]*x3 + b[2];
     const h1=f(z1), h2=f(z2);
@@ -267,7 +269,7 @@ const fns = {
         'z₂ = w₂·x + w₄·x₂ + w₆·x₃ + b₂ = '+z2.toFixed(4),
         'h₁ = f(z₁) = '+h1.toFixed(4),
         'h₂ = f(z₂) = '+h2.toFixed(4),
-        'y  = f(w₇·h₁ + w₈·h₂) = '+y.toFixed(4)+'  (f = '+ACTS[actKey].name+')',
+        'y  = f(w₇·h₁ + w₈·h₂) = '+y.toFixed(4)+'  (f = '+fns[actKey].name+')',
         '',
         'Values:',
         `w₁=${w[1]}, w₂=${w[2]}, w₃=${w[3]}, w₄=${w[4]}, w₅=${w[5]}, w₆=${w[6]}, w₇=${w[7]}, w₈=${w[8]}`,
@@ -286,7 +288,9 @@ const fns = {
   }
 
   slider.addEventListener('input',()=>setX(parseFloat(slider.value)));
-  actSel.addEventListener('change',()=>{actKey=actSel.value; forward(parseFloat(slider.value));});
+  // Fix: Add the missing select element reference
+  const actSel = document.getElementById('fn');
+  if(actSel) actSel.addEventListener('change',()=>{actKey=actSel.value; forward(parseFloat(slider.value));});
   [clamp,showForm,showZ].forEach(cb=>cb.addEventListener('change',()=>forward(parseFloat(slider.value))));
   showWeights.addEventListener('change',()=>{drawEdges(); forward(parseFloat(slider.value));});
 
@@ -333,16 +337,17 @@ const fns = {
     if(lo===hi){lo-=1;hi+=1;} const pad=(hi-lo)*0.08; yMin=lo-pad;yMax=hi+pad; rangeLbl.textContent='auto';
   }
   function drawCurve(){
-    const f=ACTS[actKey].f; calcYRange(f); buildGrid();
+    const f=fns[actKey].f; calcYRange(f); buildGrid();
     let d='M'; const STEPS=650;
     for(let i=0;i<=STEPS;i++){const x=X_MIN+(i/STEPS)*(X_MAX-X_MIN), y=f(x); d+=(i?' L':'')+xToSvg(x)+','+yToSvg(y);}
     curve.setAttribute('d',d);
   }
   function update(fromSlider=true){
-    actKey=actSel.value; fnName.textContent=ACTS[actKey].name;
+    const actSel = document.getElementById('fn');
+    actKey=actSel.value; fnName.textContent=fns[actKey].name;
     if(fromSlider){const x=parseFloat(axSlider.value); axRead.textContent=x.toFixed(2); const ns=document.getElementById('xSlider'); if(ns) ns.value=x;}
     drawCurve();
-    const x=parseFloat(axSlider.value), y=ACTS[actKey].f(x);
+    const x=parseFloat(axSlider.value), y=fns[actKey].f(x);
     yRead.textContent=(clampY.checked?Math.max(Math.min(y,1e4),-1e4):y).toFixed(3);
     const cx=xToSvg(x), cy=yToSvg(y);
     dot.setAttribute('cx',cx); dot.setAttribute('cy',cy);
@@ -353,7 +358,8 @@ const fns = {
 
   axSlider.addEventListener('input',()=>update(true));
   clampY.addEventListener('change',()=>update(false));
-  actSel.addEventListener('change',()=>update(false));
+  const actSelect = document.getElementById('fn');
+  if(actSelect) actSelect.addEventListener('change',()=>update(false));
 
   let raf=null,t0=null; const PERIOD=6000;
   function tick(ts){ if(!t0)t0=ts; const p=((ts-t0)%PERIOD)/PERIOD; const x=X_MIN+p*(X_MAX-X_MIN);

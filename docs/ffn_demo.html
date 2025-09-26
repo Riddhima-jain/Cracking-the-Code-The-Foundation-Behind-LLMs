@@ -62,7 +62,7 @@
   }
 
   .controls {
-    position:fixed;top:12px;left:12px;display:none;gap:.5rem;flex-wrap:wrap;
+    position:fixed;top:12px;left:12px;display:flex;gap:.5rem;flex-wrap:wrap;
     max-width:340px;z-index:20;
   }
   .controls button, .controls input { font:inherit; }
@@ -113,6 +113,12 @@
 <body>
 
 <div class="controls">
+  <div style="background:#172438;border:1px solid #2a3a53;border-radius:8px;padding:.6rem .7rem;margin-bottom:.5rem;font-size:.65rem;color:#94a8c6;line-height:1.3;">
+    <strong style="color:#a6bce8;">Instructions:</strong><br>
+    • Click "Replay Pass" to restart the animation<br>
+    • Adjust network density with the sliders below<br>
+    • For slower motion, add <code style="background:#243754;padding:.1rem .3rem;border-radius:3px;color:#8cb3e8;">?speed=5</code> to the URL
+  </div>
   <button id="replay">Replay Pass</button>
   <button id="togglePulse">Toggle Pulse</button>
   <div class="ctrl-group">
@@ -155,6 +161,17 @@
 </svg>
 
 <script>
+/* ---------- Activation Functions ---------- */
+const fns = {
+  relu: { name: "ReLU", f: x => Math.max(0, x) },
+  gelu: { name: "GELU", f: x => 0.5 * x * (1 + Math.tanh(Math.sqrt(2/Math.PI) * (x + 0.044715*Math.pow(x,3)))) },
+  sigmoid: { name: "Sigmoid", f: x => 1/(1+Math.exp(-x)) },
+  tanh: { name: "Tanh", f: x => Math.tanh(x) },
+  swish: { name: "Swish", f: x => x / (1 + Math.exp(-x)) }
+};
+
+// Remove the duplicate activation function declaration that was below
+
 /* ---------- Config & Timing ---------- */
 const qParams = new URLSearchParams(location.search);
 const SPEED = parseFloat(qParams.get('speed') || '1'); // 1 = baseline; higher = slower
@@ -386,23 +403,6 @@ document.getElementById('togglePulse').addEventListener('click',()=>{
 
 /* ---------- Init ---------- */
 regenerate();
-
-// Set fixed timing for capture
-PASS_INTERVAL_MS = 4000;
-window.PASS_INTERVAL_MS = 4000;
-window.PERIOD = 4000;
-
-// Start animation immediately for capture - no delays
-setTimeout(() => {
-  console.log('Starting immediate animation for capture...');
-  if (!window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    clearInterval(passInterval);
-    // Start animation loop with fixed 4-second interval
-    forwardPass();
-    passInterval = setInterval(forwardPass, 4000);
-    console.log('Animation started with 4s interval');
-  }
-}, 100);
 
 /* ---------- Capture Modes ---------- */
 (function(){
